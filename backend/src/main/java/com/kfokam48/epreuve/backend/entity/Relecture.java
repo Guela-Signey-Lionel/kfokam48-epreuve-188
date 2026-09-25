@@ -22,8 +22,10 @@ public class Relecture {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "exercice_id", nullable = false, unique = true)
+    // Changement de besoin (V3) : jusqu'à deux relectures par exercice —
+    // l'unicité porte désormais sur le couple (exercice, relecteur).
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "exercice_id", nullable = false)
     private Exercice exercice;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

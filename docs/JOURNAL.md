@@ -24,23 +24,27 @@ Chaque entrée répond aux trois mêmes questions :
 
 ## Étape 2 — Première version
 
-**Fait :**
+**Fait :** backend EF1→EF5 (présence, dépôt avec assignation des relecteurs, relecture, tableau) + frontend Next.js câblé sur l'API Spring uniquement (zéro route API propre, rewrites `/backend-api` → backend). Découverte et correction d'un bug de course critique sur les doubles dépôts/présences simultanés.
 
-**Bloqué :**
+**Bloqué :** 40 min sur la course critique : deux POST simultanés passaient tous deux le check d'unicité applicatif, puis l'insert échouait en base → 500 au lieu du 409 du contrat. Reproduit en test unitaire simulé (contrainte unique levée au save), puis traduit en exception métier.
 
-**IA :**
+**IA :** a généré la première version des écrans et proposé la traduction d'exception au save. Vérifié en relisant le scénario de course à la main (deux `curl` parallèles) et en vérifiant que le test échoue avant, puis passe après le correctif.
 
 ---
 
 ## Étape 3 — Enveloppe
 
-**Fait :**
+**Fait :** changement de besoin absorbé : migration `V3` (deux relecteurs par exercice, unicité sur le couple exercice/relecteur), statut `RELU` seulement quand toutes les relectures sont rendues, moyenne avec drapeau `moyenneProvisoire` au tableau, contrat d'API en v1.1, cahier des charges (EF7, RG5, RG14, section 7) et diagramme D2 mis à jour.
 
-**Bloqué :**
+**Bloqué :** 20 min pour arbitrer le cas « un seul autre étudiant présent » (un seul relecteur assigné, sans rattrapage) et le relecteur défaillant (pas de remplaçant) — deux réductions de périmètre assumées et documentées.
 
-**IA :**
+**IA :** a proposé de sortir l'export CSV et la réassignation pour tenir le budget temps. Vérifié que rien dans les exigences Must ne les mentionne, puis validé.
 
 **Ce que j'ai sorti du périmètre pour absorber le changement, et pourquoi :**
+
+- Remplacement d'un relecteur défaillant et rattrapage quand un seul candidat est présent : le changement de besoin rend ces mécanismes plus complexes pour un bénéfice marginal sur une promo de quelques dizaines d'étudiants.
+- Export du tableau de bord (CSV/PDF) : absent de Q16, pur confort formateur.
+- Détail par relecteur côté étudiant relu : RG7 n'exige que la note et le commentaire.
 
 ---
 

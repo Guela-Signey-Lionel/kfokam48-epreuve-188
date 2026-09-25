@@ -19,6 +19,7 @@ import com.kfokam48.epreuve.backend.repository.EtudiantRepository;
 import com.kfokam48.epreuve.backend.repository.PresenceRepository;
 import com.kfokam48.epreuve.backend.repository.SessionCoursRepository;
 import com.kfokam48.epreuve.backend.repository.TentativePresenceEchoueeRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,7 +84,15 @@ public class PresenceService {
                 .source(SourcePresence.ETUDIANT)
                 .marqueeAt(maintenant)
                 .build();
-        presence = presenceRepository.save(presence);
+        try {
+            presence = presenceRepository.save(presence);
+        } catch (DataIntegrityViolationException e) {
+            // Course critique : entre le check ci-dessus et l'insert, une autre
+            // requête a enregistré la même présence -> la contrainte UNIQUE
+            // (session_id, etudiant_id) rejette l'insert. Le contrat impose
+            // 409 DEJA_PRESENT, pas 500.
+            throw new DejaPresentException("Cet étudiant est déjà marqué présent pour cette session.");
+        }
 
         return versReponse(presence);
     }
@@ -107,7 +116,12 @@ public class PresenceService {
                 .source(SourcePresence.FORMATEUR)
                 .marqueeAt(LocalDateTime.now())
                 .build();
-        presence = presenceRepository.save(presence);
+        try {
+            presence = presenceRepository.save(presence);
+        } catch (DataIntegrityViolationException e) {
+            // Même course critique que pour le marquage étudiant.
+            throw new DejaPresentException("Cet étudiant est déjà marqué présent pour cette session.");
+        }
 
         return versReponse(presence);
     }
