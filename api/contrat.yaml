@@ -1,12 +1,21 @@
 openapi: 3.0.3
 info:
   title: Contrat imposé — Épreuve finale KFOKAM48
-  version: "1.0"
+  version: "1.1"
   description: |
     Les cinq opérations décrites ici doivent exister EXACTEMENT ainsi :
     mêmes chemins, mêmes verbes, mêmes codes de statut, même format d'erreur.
     Tout le reste de ton API est libre — ajoute tes propres opérations
     dans ce même fichier, sous /api, avant ton premier commit de code.
+
+    CHANGELOG v1.1 — changement de besoin (ouverture de l'enveloppe) :
+    - Chaque exercice est relu par DEUX relecteurs (au lieu d'un) — le
+      statut RELU n'est atteint que lorsque toutes les relectures sont rendues.
+    - La moyenne du tableau de bord est accompagnée d'un drapeau
+      `moyenneProvisoire` : tant que des relectures restent en attente, la
+      moyenne peut encore évoluer.
+    - Les opérations libres réellement servies par le backend sont
+      documentées en fin de fichier.
 
 servers:
   - url: http://localhost:8080
@@ -148,8 +157,72 @@ paths:
                     presences: { type: integer }
                     exercicesDeposes: { type: integer }
                     moyenne: { type: number, nullable: true }
+                    moyenneProvisoire:
+                      type: boolean
+                      description: >-
+                        Vraie tant que des relectures restent en attente (notes
+                        susceptibles de s'ajouter) pour cet étudiant.
                     relecturesEnAttente: { type: integer }
         "404": { $ref: "#/components/responses/Erreur" }   # PROMOTION_INCONNUE
+
+  # ---------------------------------------------------------------------------
+  # Opérations libres (servies par le backend, consommées par le frontend)
+  # ---------------------------------------------------------------------------
+
+  /api/promotions:
+    get:
+      summary: Liste des promotions (sélecteur du frontend)
+      responses:
+        "200":
+          description: Promotions avec leur nombre d'étudiants
+
+  /api/promotions/{promotionId}/etudiants:
+    get:
+      summary: Liste des étudiants d'une promotion
+      responses:
+        "200": { description: Étudiants (id + nom) }
+        "404": { $ref: "#/components/responses/Erreur" }
+
+  /api/sessions:
+    get:
+      summary: Liste des sessions d'une promotion (query promotionId)
+      responses:
+        "200": { description: Sessions avec compteurs de présences et d'exercices }
+        "404": { $ref: "#/components/responses/Erreur" }
+
+  /api/sessions/{id}:
+    get:
+      summary: Détail d'une session (présences, exercices, relectures)
+      responses:
+        "200": { description: Détail complet }
+        "404": { $ref: "#/components/responses/Erreur" }
+
+  /api/sessions/{id}/cloturer:
+    post:
+      summary: Clôture de la session par le formateur (RG2)
+      responses:
+        "200": { description: Session clôturée — le détail mis à jour est renvoyé }
+        "404": { $ref: "#/components/responses/Erreur" }
+
+  /api/sessions/{sessionId}/presences-manuelles:
+    post:
+      summary: Présence ajoutée manuellement par le formateur (EF11/RG13)
+      responses:
+        "201": { description: Présence enregistrée avec source FORMATEUR }
+        "404": { $ref: "#/components/responses/Erreur" }
+        "409": { $ref: "#/components/responses/Erreur" }
+
+  /api/etudiants/{etudiantId}/exercices:
+    get:
+      summary: Exercices d'un étudiant avec notes reçues (EF10/RG7 — jamais l'identité du relecteur)
+      responses:
+        "200": { description: Exercices et relectures reçues }
+
+  /api/etudiants/{etudiantId}/relectures:
+    get:
+      summary: Relectures assignées à un étudiant (son travail de relecteur)
+      responses:
+        "200": { description: Relectures à rendre et rendues }
 
 components:
   schemas:

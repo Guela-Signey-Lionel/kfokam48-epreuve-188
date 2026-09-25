@@ -29,7 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class PresenceControllerIT {
+class PresenceControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

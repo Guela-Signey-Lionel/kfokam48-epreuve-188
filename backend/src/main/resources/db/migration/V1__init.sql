@@ -66,5 +66,3 @@ CREATE TABLE tentative_presence_echouee (
 );
 
 CREATE INDEX idx_tentative_etudiant ON tentative_presence_echouee(etudiant_id);
-
-
