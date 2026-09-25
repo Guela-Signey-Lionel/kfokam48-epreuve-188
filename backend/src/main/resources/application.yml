@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:kfokam48}
+    username: ${DB_USER:kfokam48}
+    password: ${DB_PASSWORD:kfokam48}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    root: INFO
+    com.kfokam48.epreuve.backend: DEBUG
+
+app:
+  presence:
+    duree-validite-code-minutes: 15
+    max-tentatives-echouees: 5
+    duree-blocage-minutes: 2
