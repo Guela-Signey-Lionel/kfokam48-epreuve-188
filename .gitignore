@@ -7,6 +7,7 @@ backend/.mvn/wrapper/maven-wrapper.jar
 HELP.md
 
 # --- Frontend (Node / Next.js) ---
+frontend/worklog.md
 frontend/node_modules/
 frontend/.next/
 frontend/out/
