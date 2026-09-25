@@ -33,16 +33,30 @@ Tournent sur H2 en mémoire (profil `test`) — aucune base locale requise.
 
 ## Frontend
 
-`frontend/` est volontairement vide. Framework prévu : **Next.js** — à
-justifier en une ligne ici une fois le choix confirmé (contrainte F1).
+`frontend/` est une application **Next.js 16** (App Router, TypeScript, Tailwind,
+shadcn/ui) qui consomme **exclusivement** l'API Spring : elle ne possède aucune
+route API propre. Tous les appels partent de `src/lib/api-client.ts` vers le
+préfixe `/backend-api`, que Next réécrit vers `${NEXT_PUBLIC_API_BASE_URL}/api`
+(par défaut `http://localhost:8080`).
+
+```bash
+cd frontend
+npm install
+npm run dev     # http://localhost:3000
+```
+
+En production : `NEXT_PUBLIC_API_BASE_URL=http://backend:8080 npm run build`,
+puis `npm start`. L'authentification est absente par choix (Q1) : l'étudiant se
+désigne dans une liste, le formateur n'a pas de compte — risque assumé, documenté
+au cahier des charges (ENF6, section 7).
 
 ## Structure
 
 ```
-docs/            cahier des charges, diagrammes (Mermaid)
-api/             contrat.yaml — contrat d'API imposé
+docs/            cahier des charges, diagrammes (Mermaid), issue documentée
+api/             contrat.yaml — contrat d'API imposé (v1.1) + opérations libres
 backend/         Spring Boot (Java 17, Maven, PostgreSQL, Flyway)
-frontend/        Next.js (à faire)
+frontend/        Next.js (App Router, TypeScript, Tailwind, shadcn/ui)
 ```
 
 ## Décisions techniques prises dans ce squelette
@@ -81,5 +95,5 @@ documenter, discuter ou changer dans ta propre analyse :
   `ddl-auto=validate` en dehors des tests.
 - **B6** : `RelectureServiceTest` (règle métier réelle : auto-relecture
   interdite, note hors intervalle, double soumission) et
-  `PresenceControllerIT` (test d'intégration MockMvc sur `/api/presences`,
+  `PresenceControllerTest` (test d'intégration MockMvc sur `/api/presences`,
   H2 en mémoire, exécutable sur un poste vierge).
