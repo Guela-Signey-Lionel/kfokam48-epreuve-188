@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kfokam48
+      POSTGRES_USER: kfokam48
+      POSTGRES_PASSWORD: kfokam48
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kfokam48 -d kfokam48"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: kfokam48
+      DB_USER: kfokam48
+      DB_PASSWORD: kfokam48
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  db-data:
