@@ -2,6 +2,7 @@ package com.kfokam48.epreuve.backend.service;
 
 import com.kfokam48.epreuve.backend.config.PresenceProperties;
 import com.kfokam48.epreuve.backend.dto.PresenceCreateRequest;
+import com.kfokam48.epreuve.backend.dto.PresenceManuelleRequest;
 import com.kfokam48.epreuve.backend.dto.PresenceResponse;
 import com.kfokam48.epreuve.backend.entity.Etudiant;
 import com.kfokam48.epreuve.backend.entity.Presence;
@@ -12,6 +13,7 @@ import com.kfokam48.epreuve.backend.exception.ChampManquantException;
 import com.kfokam48.epreuve.backend.exception.CodeExpireException;
 import com.kfokam48.epreuve.backend.exception.CodeInconnuException;
 import com.kfokam48.epreuve.backend.exception.DejaPresentException;
+import com.kfokam48.epreuve.backend.exception.RessourceInconnueException;
 import com.kfokam48.epreuve.backend.exception.TropDeTentativesException;
 import com.kfokam48.epreuve.backend.repository.EtudiantRepository;
 import com.kfokam48.epreuve.backend.repository.PresenceRepository;
@@ -80,6 +82,30 @@ public class PresenceService {
                 .etudiant(etudiant)
                 .source(SourcePresence.ETUDIANT)
                 .marqueeAt(maintenant)
+                .build();
+        presence = presenceRepository.save(presence);
+
+        return versReponse(presence);
+    }
+
+    /** Q14 : ajout manuel d'une présence par le formateur — hors des 5 opérations imposées. */
+    @Transactional
+    public PresenceResponse ajouterPresenceManuelle(Long sessionId, PresenceManuelleRequest requete) {
+        SessionCours session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RessourceInconnueException("session inconnue"));
+        Etudiant etudiant = etudiantRepository.findById(requete.etudiantId())
+                .orElseThrow(() -> new ChampManquantException("etudiantId inconnu"));
+
+        presenceRepository.findBySessionIdAndEtudiantId(session.getId(), etudiant.getId())
+                .ifPresent(p -> {
+                    throw new DejaPresentException("Cet étudiant est déjà marqué présent pour cette session.");
+                });
+
+        Presence presence = Presence.builder()
+                .session(session)
+                .etudiant(etudiant)
+                .source(SourcePresence.FORMATEUR)
+                .marqueeAt(LocalDateTime.now())
                 .build();
         presence = presenceRepository.save(presence);
 
